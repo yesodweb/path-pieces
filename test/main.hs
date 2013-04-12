@@ -7,14 +7,18 @@ import Test.Hspec.QuickCheck(prop)
 import Test.QuickCheck
 
 import Web.PathPieces
+import Data.Int (Int64)
 import qualified Data.Text as T
 import Data.Maybe (fromJust)
+import Data.Time (Day(..))
 
 -- import FileLocation (debug)
 
 instance Arbitrary T.Text where
   arbitrary = fmap T.pack arbitrary
 
+instance Arbitrary Day where
+  arbitrary = fmap ModifiedJulianDay arbitrary
 
 main :: IO ()
 main = hspec spec
@@ -42,6 +46,24 @@ spec = do
       p == (fromJust . fromPathMultiPiece . toPathMultiPiece) p
 
     prop "toPathMultiPiece <=> fromPathMultiPiece String" $ \(p::[T.Text]) ->
+      p == (fromJust . fromPathMultiPiece . toPathMultiPiece) p
+
+    prop "toPathMultiPiece <=> fromPathMultiPiece Integer" $ \(p::[Integer]) ->
+      case (fromPathMultiPiece . toPathMultiPiece) p of
+        Nothing -> any (< 0) p
+        Just pConverted -> p == pConverted
+
+    prop "toPathMultiPiece <=> fromPathMultiPiece Int" $ \(p::[Int]) ->
+      case (fromPathMultiPiece . toPathMultiPiece) p of
+        Nothing -> any (< 0) p
+        Just pConverted -> p == pConverted
+
+    prop "toPathMultiPiece <=> fromPathMultiPiece Int64" $ \(p::[Int64]) ->
+      case (fromPathMultiPiece . toPathMultiPiece) p of
+        Nothing -> any (< 0) p
+        Just pConverted -> p == pConverted
+
+    prop "toPathMultiPiece <=> fromPathMultiPiece Day" $ \(p::[Day]) ->
       p == (fromJust . fromPathMultiPiece . toPathMultiPiece) p
 
 
