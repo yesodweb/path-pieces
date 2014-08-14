@@ -9,7 +9,8 @@ module Web.PathPieces
     , fromMultiPiece
     ) where
 
-import Data.Int (Int64)
+import Data.Int (Int32, Int64)
+import Data.Word (Word32, Word64)
 import qualified Data.Text as S
 import qualified Data.Text.Lazy as L
 import qualified Data.Text.Read
@@ -58,6 +59,27 @@ instance PathPiece Int64 where
         case Data.Text.Read.signed Data.Text.Read.decimal s of
             Right (i, "") -> Just i
             _ -> Nothing
+    toPathPiece = S.pack . show
+
+instance PathPiece Int32 where
+    fromPathPiece s = 
+        case Data.Text.Read.decimal s of
+            Right (i, _) -> Just i
+            Left _ -> Nothing
+    toPathPiece = S.pack . show
+
+instance PathPiece Word32 where
+    fromPathPiece s =
+        case Data.Text.Read.decimal s of
+            Right (i, _) -> Just i
+            Left _ -> Nothing
+    toPathPiece = S.pack . show
+
+instance PathPiece Word64 where
+    fromPathPiece s = 
+        case Data.Text.Read.decimal s of
+            Right (i, _) -> Just i
+            Left _ -> Nothing
     toPathPiece = S.pack . show
 
 instance PathPiece Day where
