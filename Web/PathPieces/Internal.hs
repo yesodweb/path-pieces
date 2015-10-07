@@ -30,16 +30,24 @@ import Web.HttpApiData.Internal (parseMaybeTextData, parseUrlPieceMaybe)
 -- | Convert Haskell values to and from route piece.
 class PathPiece s where
   -- | Convert from route piece.
+  --
+  -- Default implementation relies on @'FromHttpApiData'@ instance.
   fromPathPiece :: S.Text -> Maybe s
   default fromPathPiece :: FromHttpApiData s => S.Text -> Maybe s
   fromPathPiece = defaultFromPathPiece
 
   -- | Convert to route piece.
+  --
+  -- Default implementation relies on @'ToHttpApiData'@ instance.
   toPathPiece :: s -> S.Text
   default toPathPiece :: ToHttpApiData s => s -> S.Text
   toPathPiece = defaultToPathPiece
 
+-- |
+-- >>> toPathPiece ()
+-- "_"
 instance PathPiece ()
+
 instance PathPiece Char
 instance PathPiece Bool
 instance PathPiece Ordering
@@ -89,10 +97,20 @@ instance PathPiece a => PathPiece (Last a) where
   toPathPiece   = defaultToPathPiece1
   fromPathPiece = defaultFromPathPiece1
 
+-- |
+-- >>> toPathPiece (Just "Hello")
+-- "just Hello"
+-- >>> fromPathPiece "JUST 123" :: Maybe (Maybe Int)
+-- Just (Just 123)
 instance PathPiece a => PathPiece (Maybe a) where
   toPathPiece   = defaultToPathPiece1
   fromPathPiece = defaultFromPathPiece1
 
+-- |
+-- >>> toPathPiece (Left "err" :: Either String Int)
+-- "left err"
+-- >>> fromPathPiece "Right 123" :: Maybe (Either String Int)
+-- Just (Right 123)
 instance (PathPiece a, PathPiece b) => PathPiece (Either a b) where
   toPathPiece   = defaultToPathPiece2
   fromPathPiece = defaultFromPathPiece2
