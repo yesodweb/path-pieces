@@ -25,7 +25,7 @@ import Data.Void (Void)
 #endif
 
 import Web.HttpApiData
-import Web.HttpApiData.Internal (parseMaybeTextData, parseUrlPieceMaybe)
+import Web.HttpApiData.Internal (parseMaybeTextData)
 
 -- | Convert Haskell values to and from route piece.
 class PathPiece s where
