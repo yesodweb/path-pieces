@@ -156,8 +156,8 @@ class PathMultiPiece s where
   toPathMultiPiece :: s -> [S.Text]
 
 instance PathPiece a => PathMultiPiece [a] where
-    fromPathMultiPiece = mapM fromPathPiece
-    toPathMultiPiece = map toPathPiece
+    fromPathMultiPiece = either (const Nothing) (Just . fmap unwrapPathPiece) . parseUrlPieces
+    toPathMultiPiece = toUrlPieces . map WrappedPathPiece
 
 -- | A function for helping generate free 'PathPiece'
 --   instances for enumeration data types 
