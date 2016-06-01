@@ -154,11 +154,6 @@ class PathMultiPiece s where
     default toPathMultiPiece :: (Generic s, GPathMultiPiece (Rep s)) => s -> [S.Text]
     toPathMultiPiece = gtoPathMultiPiece . from
 
-data YoDawg = YoDawg Int Bool Int
-  deriving Generic
-
-instance PathMultiPiece YoDawg
-
 instance PathPiece a => PathMultiPiece [a] where
     fromPathMultiPiece = mapM fromPathPiece
     toPathMultiPiece = map toPathPiece
