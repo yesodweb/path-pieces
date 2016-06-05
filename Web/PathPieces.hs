@@ -1,7 +1,13 @@
-{-# LANGUAGE FlexibleInstances, TypeSynonymInstances, OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE FlexibleContexts     #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE DeriveGeneric        #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE DefaultSignatures    #-}
 module Web.PathPieces
     ( PathPiece (..)
     , PathMultiPiece (..)
+    , GPathMultiPiece (..)
     , readFromPathPiece
     , showToPathPiece
     -- * Deprecated
@@ -19,6 +25,7 @@ import qualified Data.Text.Read
 import Data.Time (Day)
 import Control.Exception (assert)
 import Text.Read (readMaybe)
+import GHC.Generics
 
 class PathPiece s where
     fromPathPiece :: S.Text -> Maybe s
@@ -121,9 +128,31 @@ instance (PathPiece a) => PathPiece (Maybe a) where
         Just s -> "Just " `S.append` toPathPiece s
         _ -> "Nothing"
 
+-- | A typeclass for things that can be converted into multiple path pieces.
+-- There are defaults methods for types that are that product of types with
+-- 'PathPiece' instances. In the example below, we can get a 'PathMultiPiece'
+-- instance for free:
+--
+-- @
+-- data Foo = Foo Int Bool Text
+--   deriving Generic
+-- instance PathMultiPiece Foo
+-- @
+--
+-- This behaves as you would expect:
+--
+-- >>> toPathMultiPiece (Foo 4 True "hello")
+-- ["4","True","hello"]
+--
 class PathMultiPiece s where
     fromPathMultiPiece :: [S.Text] -> Maybe s
+    default fromPathMultiPiece :: (Generic s, GPathMultiPiece (Rep s)) => [S.Text] -> Maybe s
+    fromPathMultiPiece ts = case gfromPathMultiPiece ts of
+      Nothing -> Nothing
+      Just (a,xs) -> if null xs then Just (to a) else Nothing
     toPathMultiPiece :: s -> [S.Text]
+    default toPathMultiPiece :: (Generic s, GPathMultiPiece (Rep s)) => s -> [S.Text]
+    toPathMultiPiece = gtoPathMultiPiece . from
 
 instance PathPiece a => PathMultiPiece [a] where
     fromPathMultiPiece = mapM fromPathPiece
@@ -149,6 +178,27 @@ readFromPathPiece = readMaybe . S.unpack
 --  Since 0.2.1. 
 showToPathPiece :: Show s => s -> S.Text
 showToPathPiece = S.pack . show
+
+class GPathMultiPiece s where
+    gfromPathMultiPiece :: [S.Text] -> Maybe (s a, [S.Text])
+    gtoPathMultiPiece :: s a -> [S.Text]
+
+instance PathPiece c => GPathMultiPiece (K1 i c) where
+    gtoPathMultiPiece (K1 c) = [toPathPiece c]
+    gfromPathMultiPiece ts = case ts of
+        [] -> Nothing
+        t : ss -> fmap (\a -> (a,ss)) (fmap K1 (fromPathPiece t))
+
+instance (GPathMultiPiece f) => GPathMultiPiece (M1 a b f) where
+    gtoPathMultiPiece (M1 c) = gtoPathMultiPiece c
+    gfromPathMultiPiece ts = fmap (\(a,xs) -> (M1 a, xs)) (gfromPathMultiPiece ts)
+
+instance (GPathMultiPiece f, GPathMultiPiece g) => GPathMultiPiece ((:*:) f g) where
+    gtoPathMultiPiece (f :*: g) = gtoPathMultiPiece f ++ gtoPathMultiPiece g
+    gfromPathMultiPiece ts1 = do
+      (f, ts2) <- gfromPathMultiPiece ts1
+      (g, ts3) <- gfromPathMultiPiece ts2
+      return (f :*: g,ts3)
 
 {-# DEPRECATED toSinglePiece "Use toPathPiece instead of toSinglePiece" #-}
 toSinglePiece :: PathPiece p => p -> S.Text
