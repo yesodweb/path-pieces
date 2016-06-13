@@ -19,7 +19,10 @@ library
     build-depends:   base             >= 4.6     && < 5
                    , text             >= 0.5
                    , time
-    exposed-modules: Web.PathPieces
+                   , http-api-data    >= 0.2.1   && < 0.3
+    exposed-modules:
+      Web.PathPieces
+      Web.PathPieces.Internal
     ghc-options:     -Wall
 
 test-suite test
@@ -33,6 +36,13 @@ test-suite test
                    , QuickCheck
                    , path-pieces
                    , text
+                   , time
+
+test-suite doctest
+    build-depends:    base, doctest, Glob
+    hs-source-dirs:   test
+    main-is:          DocTest.hs
+    type:             exitcode-stdio-1.0
 
 source-repository head
   type:     git
