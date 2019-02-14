@@ -1,3 +1,11 @@
+-- | Defines two typeclasses used for converting Haskell data types to and from
+--   route pieces:
+--
+--   * 'PathPiece'
+--   * 'PathMultiPiece'
+--
+-- They are used in <https://www.yesodweb.com/ Yesod> to automatically marshall
+-- data in the request path.
 {-# LANGUAGE FlexibleInstances, TypeSynonymInstances, OverloadedStrings #-}
 module Web.PathPieces
     ( PathPiece (..)
@@ -20,6 +28,53 @@ import Data.Time (Day)
 import Control.Exception (assert)
 import Text.Read (readMaybe)
 
+-- | Instances of the 'PathPiece' typeclass can be converted to and from "path
+--   pieces" of URLs.
+--   <https://www.yesodweb.com/book/routing-and-handlers#routing-and-handlers_types_of_pieces In Yesod this typeclass is used to convert to and from route pieces>.
+--
+--   In the URL @"https://example.com/path/True/7"@ there are three path
+--   pieces: @"path"@, @\"True\"@, @"7"@.  These can be converted respectively into
+--   the 'Data.Text.Text', 'Bool' and 'Int' types like so:
+--
+--   > > fromPathPiece "path" :: Maybe Text
+--   > Just "path"
+--   > > fromPathPiece "True" :: Maybe Bool
+--   > Just True
+--   > > fromPathPiece "7" :: Maybe Int
+--   > Just 7
+--
+--   The return type of 'fromPathPiece' is a 'Maybe' to account for that the
+--   conversion may fail:
+--
+--   > > fromPathPiece "seven" :: Maybe Int
+--   > Nothing
+--
+-- | The 'toPathPiece' function produces URL path pieces can can be used to
+--   build URLs:
+--
+--   > > toPathPiece True
+--   > "True"
+--   > > intercalate "/" [toPathPiece ("path" :: Text), toPathPiece True, toPathPiece (7 :: Int)]
+--   > "path/True/7"
+--
+--   Here is an example instance of a @Natural@ type encoding that the
+--   'PathPiece' must always be a non-negative integer.
+--
+--   > newtype Natural = Natural Int
+--   > instance PathPiece Natural where
+--   >     toPathPiece (Natural i) = T.pack $ show i
+--   >     fromPathPiece s =
+--   >         case reads $ T.unpack s of
+--   >             (i, ""):_
+--   >                 | i < 1 -> Nothing
+--   >                 | otherwise -> Just $ Natural i
+--   >             [] -> Nothing
+--
+--   In Yesod, after declaring the above instance, @Natural@ will be able to
+--   appear in routes, e.g.:
+--
+--   > /fib/#Natural
+--   > /add/#Natural/#Natural
 class PathPiece s where
     fromPathPiece :: S.Text -> Maybe s
     toPathPiece :: s -> S.Text
@@ -121,6 +176,21 @@ instance (PathPiece a) => PathPiece (Maybe a) where
         Just s -> "Just " `S.append` toPathPiece s
         _ -> "Nothing"
 
+-- | Instances of the 'PathMultiPiece' typeclass can be converted to and from
+--   several "path pieces" of URLs.
+--
+--   > > fromPathMultiPiece ["True","False","True"] :: Maybe [Bool]
+--   > Just [True,False,True]
+--   > > toPathMultiPiece [True,False,True]
+--   > ["True","False","True"]
+--   > > toPathMultiPiece [1, 2, 3 :: Int]
+--   > ["1","2","3"]
+--
+--   In Yesod, instances of 'PathMultiPiece' can be marshalized to and from the
+--   rest of the values in a URL path:
+--
+--   > /bools/*[Bool]
+--   > /integers/*[Int]
 class PathMultiPiece s where
     fromPathMultiPiece :: [S.Text] -> Maybe s
     toPathMultiPiece :: s -> [S.Text]
