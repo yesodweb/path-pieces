@@ -79,6 +79,7 @@ class PathPiece s where
     fromPathPiece :: S.Text -> Maybe s
     toPathPiece :: s -> S.Text
 
+-- | Represents @()@ as @"_"@.
 instance PathPiece () where
     fromPathPiece t = if t == "_" then Just () else Nothing
     toPathPiece () = "_"
