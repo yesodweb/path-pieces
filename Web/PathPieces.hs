@@ -56,8 +56,9 @@ class PathPiece s where
     --   regular Haskell values.
     --
     --   In the URL @"https://example.com/path/True/7"@ there are three path
-    --   pieces: @"path"@, @\"True\"@, @"7"@.  These can be converted respectively into
-    --   the 'Data.Text.Text', 'Bool' and 'Int' types like so:
+    --   pieces: @"path"@, @\"True\"@, @"7"@.  These can be converted
+    --   respectively into the 'Data.Text.Text', 'Bool' and 'Int' types like
+    --   so:
     --
     --   > > fromPathPiece "path" :: Maybe Text
     --   > Just "path"
@@ -66,8 +67,8 @@ class PathPiece s where
     --   > > fromPathPiece "7" :: Maybe Int
     --   > Just 7
     --
-    --   The return type of 'fromPathPiece' is a 'Maybe' to account for that the
-    --   conversion may fail:
+    --   The return type of 'fromPathPiece' is a 'Maybe' to account for that
+    --   the conversion may fail:
     --
     --   > > fromPathPiece "seven" :: Maybe Int
     --   > Nothing
