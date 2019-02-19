@@ -32,31 +32,6 @@ import Text.Read (readMaybe)
 --   pieces" of URLs.
 --   <https://www.yesodweb.com/book/routing-and-handlers#routing-and-handlers_types_of_pieces In Yesod this typeclass is used to convert to and from route pieces>.
 --
---   In the URL @"https://example.com/path/True/7"@ there are three path
---   pieces: @"path"@, @\"True\"@, @"7"@.  These can be converted respectively into
---   the 'Data.Text.Text', 'Bool' and 'Int' types like so:
---
---   > > fromPathPiece "path" :: Maybe Text
---   > Just "path"
---   > > fromPathPiece "True" :: Maybe Bool
---   > Just True
---   > > fromPathPiece "7" :: Maybe Int
---   > Just 7
---
---   The return type of 'fromPathPiece' is a 'Maybe' to account for that the
---   conversion may fail:
---
---   > > fromPathPiece "seven" :: Maybe Int
---   > Nothing
---
--- | The 'toPathPiece' function produces URL path pieces can can be used to
---   build URLs:
---
---   > > toPathPiece True
---   > "True"
---   > > intercalate "/" [toPathPiece ("path" :: Text), toPathPiece True, toPathPiece (7 :: Int)]
---   > "path/True/7"
---
 --   Here is an example instance of a @Natural@ type encoding that the
 --   'PathPiece' must always be a non-negative integer.
 --
@@ -76,7 +51,35 @@ import Text.Read (readMaybe)
 --   > /fib/#Natural
 --   > /add/#Natural/#Natural
 class PathPiece s where
+
+    -- | The 'fromPathPiece' function converts URL path pieces (back) into
+    --   regular Haskell values.
+    --
+    --   In the URL @"https://example.com/path/True/7"@ there are three path
+    --   pieces: @"path"@, @\"True\"@, @"7"@.  These can be converted respectively into
+    --   the 'Data.Text.Text', 'Bool' and 'Int' types like so:
+    --
+    --   > > fromPathPiece "path" :: Maybe Text
+    --   > Just "path"
+    --   > > fromPathPiece "True" :: Maybe Bool
+    --   > Just True
+    --   > > fromPathPiece "7" :: Maybe Int
+    --   > Just 7
+    --
+    --   The return type of 'fromPathPiece' is a 'Maybe' to account for that the
+    --   conversion may fail:
+    --
+    --   > > fromPathPiece "seven" :: Maybe Int
+    --   > Nothing
     fromPathPiece :: S.Text -> Maybe s
+
+    -- | The 'toPathPiece' function produces URL path pieces can can be used to
+    --   build URLs:
+    --
+    --   > > toPathPiece True
+    --   > "True"
+    --   > > intercalate "/" [toPathPiece ("path" :: Text), toPathPiece True, toPathPiece (7 :: Int)]
+    --   > "path/True/7"
     toPathPiece :: s -> S.Text
 
 -- | Represents @()@ as @"_"@.
