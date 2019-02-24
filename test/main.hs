@@ -51,6 +51,9 @@ spec = do
       let p = Right i :: Either String Int
       in (fromPathPiece . toPathPiece) p == Just p
 
+    prop "toPathPiece <=> fromPathPiece Rights of Either Bool Int" $ \(p :: Either Bool Int) ->
+      (fromPathPiece . toPathPiece) p == Just p
+
   describe "PathMultiPiece" $ do
     prop "toPathMultiPiece <=> fromPathMultiPiece String" $ \(p::[String]) ->
       p == (fromJust . fromPathMultiPiece . toPathMultiPiece) p
