@@ -47,6 +47,11 @@ spec = do
         Nothing -> False
         Just pConverted -> p == pConverted
 
+    prop "toPathPiece <=> fromPathPiece Either String Int" $ \(p::Either String Int) ->
+      case (fromPathPiece . toPathPiece) p of
+        Nothing -> False
+        Just pConverted -> p == pConverted
+
   describe "PathMultiPiece" $ do
     prop "toPathMultiPiece <=> fromPathMultiPiece String" $ \(p::[String]) ->
       p == (fromJust . fromPathMultiPiece . toPathMultiPiece) p

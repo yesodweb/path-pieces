@@ -181,6 +181,15 @@ instance (PathPiece a) => PathPiece (Maybe a) where
         Just s -> "Just " `S.append` toPathPiece s
         _ -> "Nothing"
 
+instance (PathPiece a, PathPiece b) => PathPiece (Either a b) where
+    fromPathPiece s = case (S.stripPrefix "Left " s, S.stripPrefix "Right " s) of
+        (_, Just r) -> Right `fmap` fromPathPiece r
+        (Just l, _) -> Left  `fmap` fromPathPiece l
+        (_, _)      -> Nothing
+    toPathPiece m = case m of
+        Right s -> "Right " `S.append` toPathPiece s
+        Left  s -> "Left "  `S.append` toPathPiece s
+
 -- | Instances of the 'PathMultiPiece' typeclass can be converted to and from
 --   several "path pieces" of URLs.
 --
