@@ -68,7 +68,7 @@ spec = do
 
     prop "toPathPiece <=> fromPathPiece Int" $ \(p::Int) ->
       case (fromPathPiece . toPathPiece) p of
-        Nothing -> p < 0
+        Nothing -> False
         Just pConverted -> p == pConverted
 
   describe "MultiPiece" $ do
