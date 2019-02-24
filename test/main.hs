@@ -47,6 +47,10 @@ spec = do
         Nothing -> False
         Just pConverted -> p == pConverted
 
+    prop "toPathPiece <=> fromPathPiece Rights of Either String Int" $ \i ->
+      let p = Right i :: Either String Int
+      in (fromPathPiece . toPathPiece) p == Just p
+
   describe "PathMultiPiece" $ do
     prop "toPathMultiPiece <=> fromPathMultiPiece String" $ \(p::[String]) ->
       p == (fromJust . fromPathMultiPiece . toPathMultiPiece) p
