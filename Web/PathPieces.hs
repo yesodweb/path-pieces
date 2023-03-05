@@ -200,6 +200,16 @@ class PathMultiPiece s where
     fromPathMultiPiece :: [S.Text] -> Maybe s
     toPathMultiPiece :: s -> [S.Text]
 
+instance (PathPiece a, PathPiece b) => PathMultiPiece (a, b) where
+    fromPathMultiPiece [x1, x2] = liftA2 (,) (fromPathPiece x1) (fromPathPiece x2)
+    fromPathMultiPiece _ = Nothing
+    toPathMultiPiece (x1, x2) = [toPathPiece x1, toPathPiece x2]
+
+instance (PathPiece a, PathPiece b, PathPiece c) => PathMultiPiece (a, b, c) where
+    fromPathMultiPiece [x1, x2, x3] = liftA3 (,,) (fromPathPiece x1) (fromPathPiece x2) (fromPathPiece x3)
+    fromPathMultiPiece _ = Nothing
+    toPathMultiPiece (x1, x2, x3) = [toPathPiece x1, toPathPiece x2, toPathPiece x3]
+
 instance PathPiece a => PathMultiPiece [a] where
     fromPathMultiPiece = mapM fromPathPiece
     toPathMultiPiece = map toPathPiece
